@@ -47,10 +47,12 @@ document.addEventListener("scroll", handleProgressbar)
 const showHideNav = (e) => {
   let toggle = document.getElementById("nav-toggle")
   let navContent = document.getElementById("nav-content")
+  let navDropdown = document.getElementById("dropdown")
   let scrollpos = window.scrollY;
 
+  // If menu button is clicked
   if (toggle.contains(e.target)) {
-
+    // If navContent is currently hidden
     if (navContent.classList.contains("hidden")) {
       navContent.classList.remove("hidden")
       navContent.classList.add("dark:bg-gray-800")
@@ -60,11 +62,15 @@ const showHideNav = (e) => {
       header.classList.remove("dark:bg-gray-900")
     } else {
       navContent.classList.add("hidden")
+      // only remove header classes if scroll allows
       if (scrollpos == 0) {
         header.classList.remove("bg-white", "shadow", "dark:bg-gray-800");
       }
     }
+    // If clicked outside navbar
   } else if (!navContent.contains(e.target)) {
+    // Ensure navDropdown is also closed if clicked outside navContent
+    navDropdown.checked = false
     navContent.classList.add("hidden")
     if (scrollpos == 0) {
       header.classList.remove("bg-white", "shadow", "dark:bg-gray-800");
@@ -72,6 +78,10 @@ const showHideNav = (e) => {
       navContent.classList.add("dark:bg-gray-900")
     }
   }
+  // Toggle inline navbar dropdown
+  let dropdownMenu = document.getElementById("dropdownmenu")
+  navDropdown.checked ? dropdownMenu.classList.remove("hidden") : dropdownMenu.classList.add("hidden")
+
 }
 document.addEventListener("click", showHideNav)
 

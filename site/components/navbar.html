@@ -3,7 +3,7 @@
     <div id="progress" class="h-1 z-20 top-0"
         style="background:linear-gradient(to right, #4dc0b5 var(--scroll), transparent 0);"></div>
 
-    <div class="w-full md:max-w-6xl mx-auto flex flex-wrap items-center justify-between mt-0 py-3">
+    <div class="w-full md:max-w-6xl flex flex-wrap items-center justify-between mt-0 py-3">
 
         <div class="pl-4">
             <a class="text-gray-900 no-underline font-extrabold text-xl flex dark:text-white" href="/">
@@ -30,8 +30,44 @@
                         href="/">Home</a>
                 </li>
                 <li class="mr-2">
-                    <a class="inline-block py-2 px-4 text-gray-600 no-underline hover:text-gray-900 dark:hover:text-white dark:text-gray-300"
-                        href="/other">Other</a>
+                    <input type="checkbox" id="dropdown" class="hidden absolute">
+                    <div
+                        class="px-4 text-gray-600 hover:text-gray-900 dark:hover:text-white dark:text-gray-300  stroke-gray-600 hover:stroke-gray-900 dark:hover:stroke-white dark:stroke-gray-300">
+                        <label for="dropdown" class="flex min-w-max items-center cursor-pointer">
+                            <p class="py-2">Other</p>
+                            <svg class="h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M19 9l-7 7-7-7" />
+                            </svg>
+                        </label>
+                    </div>
+                    <div id="dropdownmenu"
+                        class="lg:absolute lg:px-0 px-4 min-w-max shadow rounded hidden bg-white  dark:bg-gray-800 dark:lg:bg-gray-900 border border-gray-400">
+                        <ul>
+                            <li
+                                class="stroke-gray-600 hover:stroke-gray-900 dark:hover:stroke-white dark:stroke-gray-300">
+                                <a class="flex hover:bg-gray-200 dark:hover:bg-gray-800 dark:hover:text-white dark:text-gray-300 text-gray-600 hover:text-gray-900"
+                                    href="/blog/">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+                                        stroke-width="2" class="mt-0.5">
+                                        <path d="M14 9l6 6-6 6" />
+                                        <path d="M4 4v7a4 4 0 0 0 4 4h11" />
+                                    </svg>Blog</a>
+                            </li>
+                            <li
+                                class="stroke-gray-600 hover:stroke-gray-900 dark:hover:stroke-white dark:stroke-gray-300">
+                                <a class="flex hover:bg-gray-200 dark:hover:bg-gray-800 dark:hover:text-white dark:text-gray-300 text-gray-600 hover:text-gray-900"
+                                    href="/pages/conways.html">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+                                        stroke-width="2" class="mt-0.5">
+                                        <path d="M14 9l6 6-6 6" />
+                                        <path d="M4 4v7a4 4 0 0 0 4 4h11" />
+                                    </svg>Conways</a>
+                            </li>
+                        </ul>
+                    </div>
+
+
                 </li>
                 <li class="mr-2">
                     <a class="inline-block py-2 px-4 text-gray-600 no-underline hover:text-gray-900 dark:hover:text-white dark:text-gray-300"
@@ -39,7 +75,7 @@
                 </li>
                 <li class="mr-2">
                     <button id="theme-toggle" type="button"
-                        class="px-4 py-2 text-gray-500 dark:text-gray-400 hover:bg-gray-300 dark:hover:bg-gray-700 rounded-lg text-sm p-2.5">
+                        class="px-4 py-2 text-gray-500 dark:text-gray-400 hover:bg-gray-300 dark:hover:bg-gray-700 rounded text-sm p-2.5">
                         <svg id="theme-toggle-dark-icon" class="hidden w-5 h-5" fill="currentColor" viewBox="0 0 20 20"
                             xmlns="http://www.w3.org/2000/svg">
                             <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"></path>
