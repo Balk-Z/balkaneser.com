@@ -150,7 +150,7 @@ function handleNavbarHighlighting() {
 // all JS that access navbar/footer elements has to happen after the loop to avoid null objects
 async function injectComponents() {
   for (const entry of ["navbar", "footer"]) {
-    await fetch(`components/${entry}.html`).then(r => r.text()).then(text => document.getElementById(`${entry}-placeholder`).outerHTML = text)
+    await fetch(`/components/${entry}.html`).then(r => r.text()).then(text => document.getElementById(`${entry}-placeholder`).outerHTML = text)
   }
   // highlight current navbar element
   handleNavbarHighlighting()
