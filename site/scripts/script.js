@@ -162,3 +162,68 @@ async function injectComponents() {
 
 }
 injectComponents()
+
+function validateUserInputAndReact() {
+  let username = document.getElementById("username");
+  let password = document.getElementById("password");
+  let loginBox = document.getElementById("loginBox");
+  let error_obj = document.getElementById("err")
+  let error_text = "Please enter information into both fields :)"
+
+  if (username.value == "" || password.value == "") {
+    let error_div = `<div id="err" class="text-center text-4xl text-red-600 pb-4">${error_text}</div>`
+    let auth_error = new DOMParser().parseFromString(error_div, "text/html").body.firstChild
+    if (error_obj == null) {
+      loginBox.insertBefore(auth_error, loginBox.firstChild)
+    } else {
+      error_obj.innerHTML = error_text
+    }
+    username.classList.add("border-red-600", "border-4")
+    password.classList.add("border-red-600", "border-4")
+    username.value = "";
+    password.value = "";
+    return false
+  } else {
+    if (error_obj != null) {
+      username.classList.remove("border-red-600", "border-4")
+      password.classList.remove("border-red-600", "border-4")
+      loginBox.removeChild(error_obj)
+      if (error_obj.innerHTML == error_text) {
+      alert("Good Job!")
+      }
+    }
+    return true
+  }
+}
+
+function btnlogin(e) {
+  e.preventDefault();
+  let error_text = "Authentication Error"
+  let error_div = `<div id="err" class="text-center text-4xl text-red-600 pb-4">${error_text}</div>`
+
+  if (validateUserInputAndReact()){
+  let headers = new Headers();
+  headers.set('Authorization', 'Basic ' + btoa(username.value + ":" + password.value));
+
+  fetch("http://localhost:8080/login", {
+    method: 'GET',
+    headers: headers,
+  }).then(response => {
+    if (!response.ok) {
+      throw Error();
+    }
+    
+
+  }).catch(e => {
+    let auth_error = new DOMParser().parseFromString(error_div, "text/html").body.firstChild
+    if (document.getElementById("err") == null) {
+      loginBox.insertBefore(auth_error, loginBox.firstChild)
+    }
+  });
+  }
+
+  username.value = "";
+  password.value = "";
+}
+
+document.addEventListener("submit", btnlogin)
