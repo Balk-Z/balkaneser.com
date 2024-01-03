@@ -189,7 +189,7 @@ function validateUserInputAndReact() {
       password.classList.remove("border-red-600", "border-4")
       loginBox.removeChild(error_obj)
       if (error_obj.innerHTML == error_text) {
-      alert("Good Job!")
+        alert("Good Job!")
       }
     }
     return true
@@ -201,25 +201,24 @@ function btnlogin(e) {
   let error_text = "Authentication Error"
   let error_div = `<div id="err" class="text-center text-4xl text-red-600 pb-4">${error_text}</div>`
 
-  if (validateUserInputAndReact()){
-  let headers = new Headers();
-  headers.set('Authorization', 'Basic ' + btoa(username.value + ":" + password.value));
+  if (validateUserInputAndReact()) {
+    let headers = new Headers();
+    headers.set('Authorization', 'Basic ' + btoa(username.value + ":" + password.value));
 
-  fetch("http://localhost:8080/login", {
-    method: 'GET',
-    headers: headers,
-  }).then(response => {
-    if (!response.ok) {
-      throw Error();
-    }
-    
+    fetch("https://balkaneser.com/login", {
+      method: 'GET',
+      headers: headers,
+    }).then(response => {
+      if (!response.ok) {
+        throw Error();
+      }
 
-  }).catch(e => {
-    let auth_error = new DOMParser().parseFromString(error_div, "text/html").body.firstChild
-    if (document.getElementById("err") == null) {
-      loginBox.insertBefore(auth_error, loginBox.firstChild)
-    }
-  });
+    }).catch(e => {
+      let auth_error = new DOMParser().parseFromString(error_div, "text/html").body.firstChild
+      if (document.getElementById("err") == null) {
+        loginBox.insertBefore(auth_error, loginBox.firstChild)
+      }
+    });
   }
 
   username.value = "";

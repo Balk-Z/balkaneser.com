@@ -3,7 +3,6 @@ package main
 import (
 	"crypto/tls"
 	"errors"
-	"fmt"
 	"io"
 	"log"
 	"net/http"
@@ -19,7 +18,6 @@ func ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	if strings.Contains(path, "/secrets/") {
 		c, err := r.Cookie("cookie")
-		fmt.Println(err)
 		if err != nil {
 			http.Error(w, "Unauthorized", http.StatusUnauthorized)
 			return
@@ -73,9 +71,7 @@ func notFound(w http.ResponseWriter, r *http.Request) {
 func Login(w http.ResponseWriter, r *http.Request) {
 	username, pwd, ok := r.BasicAuth()
 	if ok {
-		fmt.Println(username, pwd)
 		if username == "balk" && pwd == "123" {
-			fmt.Println("success")
 			http.SetCookie(w, &http.Cookie{Name: "cookie", Value: "yummy", MaxAge: 1800, SameSite: http.SameSiteNoneMode})
 			w.Header().Add("success", "123")
 			w.WriteHeader(http.StatusOK)
