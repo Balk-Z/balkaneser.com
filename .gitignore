@@ -2,4 +2,4 @@ build
 *.css
 tailwind.config.js
 !site/style.css
-/pages/secrets/
+site/pages/secrets/
