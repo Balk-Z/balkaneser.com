@@ -3,3 +3,4 @@ build
 tailwind.config.js
 !site/style.css
 site/pages/secrets/
+creds.json

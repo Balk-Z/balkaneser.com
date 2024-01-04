@@ -13,20 +13,29 @@ import (
 
 var rootPath = "./site/"
 
-func ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	path := filepath.Join(rootPath, r.URL.Path[1:])
+const cookieName = "balkAuth"
 
+func isCallerAuthorized(w http.ResponseWriter, r *http.Request, path string) bool {
 	if strings.Contains(path, "/secrets/") {
-		c, err := r.Cookie("cookie")
+		c, err := r.Cookie(cookieName)
 		if err != nil {
-			http.Error(w, "Unauthorized", http.StatusUnauthorized)
-			return
+			unauthorized(w, r)
+			return false
 		}
 
 		if c.Value != "yummy" {
-			http.Error(w, "Unauthorized", http.StatusUnauthorized)
-			return
+			unauthorized(w, r)
+			return false
 		}
+	}
+	return true
+}
+
+func ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	path := filepath.Join(rootPath, r.URL.Path[1:])
+
+	if !isCallerAuthorized(w, r, path) {
+		return
 	}
 
 	f, err := os.Stat(path)
@@ -68,18 +77,32 @@ func notFound(w http.ResponseWriter, r *http.Request) {
 	io.Copy(w, f)
 }
 
+func unauthorized(w http.ResponseWriter, r *http.Request) {
+	w.WriteHeader(http.StatusUnauthorized)
+
+	f, err := os.Open(filepath.Join(rootPath, "401.html"))
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	defer f.Close()
+
+	io.Copy(w, f)
+}
+
 func Login(w http.ResponseWriter, r *http.Request) {
 	username, pwd, ok := r.BasicAuth()
 	if ok {
 		if username == "balk" && pwd == "123" {
-			http.SetCookie(w, &http.Cookie{Name: "cookie", Value: "yummy", MaxAge: 1800, Secure: true, SameSite: http.SameSiteNoneMode})
-			w.Header().Add("success", "123")
-			w.WriteHeader(http.StatusOK)
+			http.SetCookie(w, &http.Cookie{Name: cookieName, Value: "yummy", MaxAge: 1800, Secure: true, SameSite: http.SameSiteNoneMode})
+			w.WriteHeader(http.StatusNoContent)
 		} else {
 			http.Error(w, "Bad credentials", http.StatusUnauthorized)
+			return
 		}
 	} else {
 		http.Error(w, "Unable to parse credentials", http.StatusBadRequest)
+		return
 	}
 }
 
