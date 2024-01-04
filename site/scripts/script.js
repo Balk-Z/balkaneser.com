@@ -206,12 +206,11 @@ const handleNavbar = (e) => {
 }
 document.addEventListener("click", handleNavbar)
 
+// executes login to server
 const handleLogin = (e) => {
   e.preventDefault();
 
   const error_text = "Authentication Error"
-  const success_div = `<div class="animate-fade fixed w-full z-10 bottom-0 bg-green-200 px-6 py-2 sm:px-3.5 overflow-hidden opacity-0 leading-6 text-center text-gray-900">Authentication successful!</div>`
-
   if (validateUserLoginInputAndReact()) {
     const loginEndpoint = window.location.hostname == "localhost" ? "http://localhost:8080/login" : "https://balkaneser.com/login"
     let headers = new Headers();
