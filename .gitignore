@@ -1,3 +1,5 @@
 build
-site/*.css
+*.css
+tailwind.config.js
 !site/style.css
+/pages/secrets/

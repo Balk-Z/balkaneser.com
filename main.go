@@ -72,7 +72,7 @@ func Login(w http.ResponseWriter, r *http.Request) {
 	username, pwd, ok := r.BasicAuth()
 	if ok {
 		if username == "balk" && pwd == "123" {
-			http.SetCookie(w, &http.Cookie{Name: "cookie", Value: "yummy", MaxAge: 1800, SameSite: http.SameSiteNoneMode})
+			http.SetCookie(w, &http.Cookie{Name: "cookie", Value: "yummy", MaxAge: 1800, Secure: true, SameSite: http.SameSiteNoneMode})
 			w.Header().Add("success", "123")
 			w.WriteHeader(http.StatusOK)
 		} else {
