@@ -209,7 +209,8 @@ document.addEventListener("click", handleNavbar)
 // executes login to server
 const handleLogin = (e) => {
   e.preventDefault();
-
+  let username = document.getElementById("username");
+  let password = document.getElementById("password");
   const error_text = "Authentication Error"
   if (validateUserLoginInputAndReact()) {
     const loginEndpoint = window.location.hostname == "localhost" ? "http://localhost:8080/login" : "https://balkaneser.com/login"

@@ -2,6 +2,7 @@ package main
 
 import (
 	"crypto/tls"
+	"encoding/json"
 	"errors"
 	"io"
 	"log"
@@ -15,6 +16,56 @@ var rootPath = "./site/"
 
 const cookieName = "balkAuth"
 
+var users []User
+
+var nilUser User
+
+type User struct {
+	Username string `json:"username"`
+	Pwd      string `json:"pwd"`
+	Cookie   string `json:"cookie"`
+}
+
+type Users struct {
+	Users []User `json:"users"`
+}
+
+func notFound(w http.ResponseWriter, r *http.Request) {
+	w.WriteHeader(http.StatusNotFound)
+
+	f, err := os.Open(filepath.Join(rootPath, "404.html"))
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	defer f.Close()
+
+	io.Copy(w, f)
+}
+
+func unauthorized(w http.ResponseWriter, r *http.Request) {
+	w.WriteHeader(http.StatusUnauthorized)
+
+	f, err := os.Open(filepath.Join(rootPath, "401.html"))
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	defer f.Close()
+
+	io.Copy(w, f)
+}
+
+func findUserByValue(val string) User {
+	for i := 0; i < len(users); i++ {
+		user := users[i]
+		if val == user.Username || val == user.Pwd || val == user.Cookie {
+			return user
+		}
+	}
+	return nilUser
+}
+
 func isCallerAuthorized(w http.ResponseWriter, r *http.Request, path string) bool {
 	if strings.Contains(path, "/secrets/") {
 		c, err := r.Cookie(cookieName)
@@ -22,13 +73,40 @@ func isCallerAuthorized(w http.ResponseWriter, r *http.Request, path string) boo
 			unauthorized(w, r)
 			return false
 		}
-
-		if c.Value != "yummy" {
+		//check if sent cookie value belongs to one of the known accounts
+		if findUserByValue(c.Value) == nilUser {
 			unauthorized(w, r)
 			return false
 		}
 	}
 	return true
+}
+
+func validateCredentials(username string, pwd string) *http.Cookie {
+	user := findUserByValue(username)
+
+	if user != nilUser && pwd == user.Pwd {
+		return &http.Cookie{Name: cookieName, Value: user.Cookie, MaxAge: 1800, Secure: true, SameSite: http.SameSiteNoneMode}
+	}
+
+	return nil
+}
+
+func Login(w http.ResponseWriter, r *http.Request) {
+	username, pwd, ok := r.BasicAuth()
+	if ok {
+		cookie := validateCredentials(username, pwd)
+		if cookie != nil {
+			http.SetCookie(w, cookie)
+			w.WriteHeader(http.StatusNoContent)
+			return
+		}
+		http.Error(w, "Bad credentials", http.StatusUnauthorized)
+		return
+	} else {
+		http.Error(w, "400 - Bad Request", http.StatusBadRequest)
+		return
+	}
 }
 
 func ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -64,49 +142,13 @@ func ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	http.ServeFile(w, r, path)
 }
 
-func notFound(w http.ResponseWriter, r *http.Request) {
-	w.WriteHeader(http.StatusNotFound)
-
-	f, err := os.Open(filepath.Join(rootPath, "404.html"))
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-	defer f.Close()
-
-	io.Copy(w, f)
-}
-
-func unauthorized(w http.ResponseWriter, r *http.Request) {
-	w.WriteHeader(http.StatusUnauthorized)
-
-	f, err := os.Open(filepath.Join(rootPath, "401.html"))
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-	defer f.Close()
-
-	io.Copy(w, f)
-}
-
-func Login(w http.ResponseWriter, r *http.Request) {
-	username, pwd, ok := r.BasicAuth()
-	if ok {
-		if username == "balk" && pwd == "123" {
-			http.SetCookie(w, &http.Cookie{Name: cookieName, Value: "yummy", MaxAge: 1800, Secure: true, SameSite: http.SameSiteNoneMode})
-			w.WriteHeader(http.StatusNoContent)
-		} else {
-			http.Error(w, "Bad credentials", http.StatusUnauthorized)
-			return
-		}
-	} else {
-		http.Error(w, "Unable to parse credentials", http.StatusBadRequest)
-		return
-	}
-}
-
 func main() {
+	// either read from a save source, i.e cloud storage, or use a proper database you nitwit (or just a auth provider..)
+	file, _ := os.ReadFile("creds.json")
+	creds := Users{}
+	_ = json.Unmarshal([]byte(file), &creds)
+	users = creds.Users
+
 	mux := http.NewServeMux()
 	mux.HandleFunc("/", ServeHTTP)
 	mux.HandleFunc("/login", Login)
