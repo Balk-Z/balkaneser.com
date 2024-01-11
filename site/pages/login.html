@@ -43,7 +43,15 @@
                             </label>
                             <input
                                 class="w-full px-4 py-2 rounded-lg border border-gray-400 hover:bg-gray-100 hover:dark:bg-gray-200"
-                                id="password" placeholder="&#9679;&#9679;&#9679;&#9679;&#9679;&#9679;">
+                                id="password" placeholder="&#9679;&#9679;&#9679;&#9679;&#9679;&#9679;" type="password">
+                            <div class="text-gray-900 dark:text-white pt-2 text-sm">
+                                <input
+                                    class="px-2 rounded-lg border border-gray-400 hover:bg-gray-100 hover:dark:bg-gray-200"
+                                    id="password" placeholder="&#9679;&#9679;&#9679;&#9679;&#9679;&#9679;"
+                                    type="checkbox"
+                                    onclick="let x = document.getElementById('password'); x.type == 'password' ? x.type = 'text' : x.type = 'password'">
+                                Show password
+                            </div>
                         </div>
                         <div>
                             <button
