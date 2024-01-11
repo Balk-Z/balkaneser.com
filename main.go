@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"crypto/tls"
 	"encoding/json"
 	"errors"
@@ -10,6 +11,8 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+
+	"cloud.google.com/go/storage"
 )
 
 var rootPath = "./site/"
@@ -92,6 +95,35 @@ func validateCredentials(username string, pwd string) *http.Cookie {
 	return nil
 }
 
+func setupCredentialsDB() []User {
+	// if call fails return non nil user, preventing logins but making the site available
+	errorFunction := func(err error) []User {
+		log.Println(err.Error())
+		return []User{{Username: "error"}}
+	}
+
+	ctx := context.Background()
+	client, err := storage.NewClient(ctx)
+	if err != nil {
+		return errorFunction(err)
+	}
+	rc, err := client.Bucket("secret-balk-content").Object("creds.json").NewReader(ctx)
+	if err != nil {
+		return errorFunction(err)
+	}
+	slurp, err := io.ReadAll(rc)
+	rc.Close()
+	if err != nil {
+		return errorFunction(err)
+	}
+
+	creds := Users{}
+	_ = json.Unmarshal([]byte(slurp), &creds)
+	users = creds.Users
+	log.Println("Successfully read credentials")
+	return users
+}
+
 func Login(w http.ResponseWriter, r *http.Request) {
 	username, pwd, ok := r.BasicAuth()
 	if ok {
@@ -143,11 +175,7 @@ func ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
-	// either read from a save source, i.e cloud storage, or use a proper database you nitwit (or just a auth provider..)
-	file, _ := os.ReadFile("creds.json")
-	creds := Users{}
-	_ = json.Unmarshal([]byte(file), &creds)
-	users = creds.Users
+	users = setupCredentialsDB()
 
 	mux := http.NewServeMux()
 	mux.HandleFunc("/", ServeHTTP)
