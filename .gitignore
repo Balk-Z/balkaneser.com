@@ -1,6 +1,5 @@
-build
-*.css
-tailwind.config.js
-!site/style.css
-site/pages/secrets/
-creds.json
+/**
+!site/
+!*.go
+!go.*
+!Dockerfile
