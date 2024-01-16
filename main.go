@@ -8,6 +8,7 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"net/http/httputil"
 	"os"
 	"path/filepath"
 	"strings"
@@ -15,13 +16,15 @@ import (
 	"cloud.google.com/go/storage"
 )
 
-var rootPath = "./site/"
+const (
+	cookieName = "balkAuth"
+	rootPath   = "./site/"
+)
 
-const cookieName = "balkAuth"
-
-var users []User
-
-var nilUser User
+var (
+	users   []User
+	nilUser User
+)
 
 type User struct {
 	Username string `json:"username"`
@@ -69,7 +72,7 @@ func findUserByValue(val string) User {
 	return nilUser
 }
 
-func isCallerAuthorized(w http.ResponseWriter, r *http.Request, path string) bool {
+func isAuthorizedToAccessFile(w http.ResponseWriter, r *http.Request, path string) bool {
 	if strings.Contains(path, "/secrets/") {
 		c, err := r.Cookie(cookieName)
 		if err != nil {
@@ -124,11 +127,31 @@ func setupCredentialsDB() []User {
 	return users
 }
 
+func GetUser(w http.ResponseWriter, r *http.Request) {
+	c, err := r.Cookie(cookieName)
+	if err != nil {
+		w.WriteHeader(http.StatusNotFound)
+		return
+	}
+	user := findUserByValue(c.Value)
+	if user != nilUser {
+		data := struct {
+			Username string `json:"username"`
+		}{user.Username}
+		json.NewEncoder(w).Encode(data)
+		return
+	}
+	s, _ := httputil.DumpRequest(r, false)
+	log.Printf("%s\n", s)
+	http.Error(w, "You are an intersting person.\nWrite me a mail!", http.StatusNotAcceptable)
+}
+
 func Login(w http.ResponseWriter, r *http.Request) {
 	username, pwd, ok := r.BasicAuth()
 	if ok {
 		cookie := validateCredentials(username, pwd)
 		if cookie != nil {
+			log.Printf("Successful login for: %s", username)
 			http.SetCookie(w, cookie)
 			w.WriteHeader(http.StatusNoContent)
 			return
@@ -144,7 +167,7 @@ func Login(w http.ResponseWriter, r *http.Request) {
 func ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	path := filepath.Join(rootPath, r.URL.Path[1:])
 
-	if !isCallerAuthorized(w, r, path) {
+	if !isAuthorizedToAccessFile(w, r, path) {
 		return
 	}
 
@@ -180,6 +203,7 @@ func main() {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/", ServeHTTP)
 	mux.HandleFunc("/login", Login)
+	mux.HandleFunc("/user", GetUser)
 
 	cfg := &tls.Config{
 		MinVersion:               tls.VersionTLS12,
